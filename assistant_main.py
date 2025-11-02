@@ -16,10 +16,14 @@ class Name(Field):               # Клас для зберігання імен
 
 class Phone(Field):              # Клас для зберігання номера телефону. Має валідацію формату (10 цифр).
     def __init__(self, phone_number: str):
-         ph = str(phone_number).strip() # приводимо до єдиного формату
-         if len(ph) != 10 or not ph.isdigit():
+         ph = str(phone_number).strip()               # приводимо до єдиного формату
+         if len(ph) != 10 or not ph.isdigit():        # check fot 10 and for digits
               raise ValueError("Номер має бути у форматі 10 цифр")
-
+         else:
+             super().__init__(ph)
+         
+    def __eq__(self, other):
+        return isinstance(other, Phone) and self.value == other.value     # To be able to compare two phone obj in Record dd change remove phone
 
 class Record:                    # Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів.
     def __init__(self, name):
@@ -27,25 +31,76 @@ class Record:                    # Клас для зберігання інфо
         self.phones = []
 
     def add_phone(self, phone: Phone):
+        if phone not in self.phones:
+            self.phones.append(phone)
+        else:
+            print(f"Такий номер вже є")
          
     def remove_phone(self, phone: Phone):
+        self.phones = [p for p in self.phones if p != phone]  # New list withou phone to delete
+        print(f"Видалено номер {phone}")
 
     def edit_phone(self, old_phone:Phone, new_phone: Phone):
+        for phone in self.phones:
+            if phone == old_phone:
+                self.phone = new_phone
+                print(f"{old_phone} замінено на {new_phone}")
+                break        # заміна першого знайденого
+            else:
+                print(f"{old_phone} не знайдено")
 
-    def find_phone(self, Phone):
-             
+    def find_phone(self, phone: Phone):
+        for p in self.phones:
+            if p == phone:
+                print(f"{self.name}: {p}")
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
 
 class AddressBook(UserDict):     # Клас для зберігання та управління записами.
-    
-    def add_rercord(self, record):
-          self.data[record.name] = record.phones
 
-    def find(self, name):
-           result = (filter(lambda))
+    def add_record(self, record: Record):
+          self.data[record.name] = record
+
+    def find(self, name_to_find: str):
+        return self.data.get(name_to_find)    # To get the record by name
                
-    def delete(self, name):
-           
-           
+    def delete(self, name: str):
+        self.data.pop(name, print(f"Запис {name} не знайдено"))   # Deleting or returning a message of not found
+
+
+
+
+
+# # Створення нової адресної книги
+#     book = AddressBook()
+
+#     # Створення запису для John
+#     john_record = Record("John")
+#     john_record.add_phone("1234567890")
+#     john_record.add_phone("5555555555")
+
+#     # Додавання запису John до адресної книги
+#     book.add_record(john_record)
+
+#     # Створення та додавання нового запису для Jane
+#     jane_record = Record("Jane")
+#     jane_record.add_phone("9876543210")
+#     book.add_record(jane_record)
+
+#     # Виведення всіх записів у книзі
+#     for name, record in book.data.items():
+#         print(record)
+
+#     # Знаходження та редагування телефону для John
+#     john = book.find("John")
+#     john.edit_phone("1234567890", "1112223333")
+
+#     print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+
+#     # Пошук конкретного телефону у записі John
+#     found_phone = john.find_phone("5555555555")
+#     print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+
+#     # Видалення запису Jane
+#     book.delete("Jane")
